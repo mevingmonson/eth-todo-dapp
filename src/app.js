@@ -14,8 +14,8 @@ App = {
   // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
   loadWeb3: async () => {
     if (typeof web3 !== "undefined") {
-      App.web3Provider = web3.currentProvider;
-      web3 = new window.Web3(web3.currentProvider);
+      App.web3Provider = window.ethereum;
+      web3 = new window.Web3(window.ethereum);
     } else {
       window.alert("Please connect to Metamask.");
     }
@@ -32,11 +32,21 @@ App = {
       } catch (error) {
         // User denied account access...
       }
+      // try {
+      //   // Request account access if needed
+      //   const accounts = await ethereum.send("eth_requestAccounts");
+      //   console.log("accounts--", accounts);
+      //   // Accounts now exposed, use them
+      //   ethereum.send("eth_sendTransaction", { from: accounts[0] /* ... */ });
+      // } catch (error) {
+      //   // User denied account access
+      //   console.log("accounts error", error);
+      // }
     }
     // Legacy dapp browsers...
     else if (window.web3) {
-      App.web3Provider = web3.currentProvider;
-      window.web3 = new Web3(web3.currentProvider);
+      App.web3Provider = window.ethereum;
+      window.web3 = new Web3(window.ethereum);
       // Acccounts always exposed
       web3.eth.sendTransaction({
         /* ... */
@@ -52,7 +62,10 @@ App = {
 
   loadAccount: async () => {
     // Set the current blockchain account
-    App.account = web3.eth.accounts[0];
+    // App.account = web3.eth.accounts[0];
+    const accounts = await web3.eth.getAccounts();
+    App.account = accounts[0];
+    console.log("accounts", accounts);
   },
 
   loadContract: async () => {
@@ -121,7 +134,8 @@ App = {
   createTask: async () => {
     App.setLoading(true);
     const content = $("#newTask").val();
-    await App.todoList.createTask(content);
+    // await App.todoList.createTask(content);
+    await App.todoList.createTask(content, { from: App.account });
     window.location.reload();
   },
 
